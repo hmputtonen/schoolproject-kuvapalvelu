@@ -1,0 +1,208 @@
+<%- include("includes/header"); -%>
+<div class="row justify-content-center">
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top">
+    
+    <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" href="/"> <img class="icon" src="/icons/home.svg"> Etusivu</a>
+        </li>
+        <% if(kayttaja == null){%>
+        <li class="nav-item">
+          <a class="nav-link" href="/kirjautuminen/">       <img class="icon" src="/icons/log-in.svg"> Kirjaudu </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/rekisteroityminen/">       <img class="icon" src="/icons/user-plus.svg"> Rekisteröityminen </a>
+        </li>
+        <% } else { %>
+        <li class="nav-item">
+          <a class="nav-link" href="/lisaaKuva/">       <img class="icon" src="/icons/upload.svg"> Lataa uusi kuva </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/omatKuvat/">       <img class="icon" src="/icons/box.svg"> Omat kuvat </a>
+        </li>
+        <li class="nav-item ml-4">
+            <button class="btn btn-secondary btn-sm mt-1" data-toggle="modal" data-target="#kirjaudu_ulos">       Kirjaudu ulos <img class="icon" src="/icons/log-out.svg"> </button >
+        </li>
+        <% } %>
+    </ul>
+    
+  </nav>
+</div>
+
+  
+<%if(kuvat != '') {%> 
+  <% kuvat.forEach(kuva => { %>
+
+    <% let aika = new Date(kuva.aikaleima); %>
+    <%let paiva = aika.getDate();%> 
+    <%let kk = aika.getMonth()+1;%> 
+    <%let vuosi = aika.getFullYear();%> 
+    <%let tunnit = aika.getHours();%>
+    <%let min = aika.getMinutes();%>
+    <%let aikaleima = `${paiva}.${kk}.${vuosi}  klo ${tunnit}:${min}`; %>
+
+    <div class="row justify-content-center mt-3">
+        <div class="card" style="max-width: 1000px;">
+        <div class="card-header">
+          <div class="row">
+            <div class="col-9">
+              <h4 class="mt-2"><%= kuva.otsikko%></h4>
+            </div>
+      <div class="col-3 float-right">
+        <%if(kayttaja != null) {%> 
+        
+        <%if(kuva.kayttaja_id == kayttaja.id){%>
+
+          <h6 class="mt-1" data-toggle="tooltip" title="Kuvasi saamat tykkäykset"><small>Tykkäykset: <b><%=kuva.tykkayksia%></b></small></h6>
+          <h6 class="mt-1" data-toggle="tooltip" title="Kommenttien määrä"><small>Kommentit: <b><%=kuva.kommentteja%></b></small></h6>
+
+        <%} else {%>
+          <form method="POST" action="/lisaaTykkays">
+              <button data-toggle="tooltip" title="Klikkaa lisätäksesi tykkäys tälle kuvalle!" name="tykkays" value="<%= kuva.kuva_id%>" type="submit" class="btn btn-success"><img class="icon" src="/icons/thumbs-up.svg"></button>
+              <h6><small>Tykkäykset: <b><%=kuva.tykkayksia%></b></small></h6>
+          </form>
+        <% } %>
+        <%}else{%> 
+          <form method="GET" action="/kirjautuminen/">
+            <button  name="tykkays" value="<%= kuva.kuva_id%>" type="submit" class="btn btn-secondary"><img data-toggle="tooltip" title="Kirjaudu sisään lisätäksesi kuville tykkäyksiä!" class="icon mr-1 inline" src="/icons/thumbs-up.svg"></button>
+            <h6><small>Tykkäykset: <b><%=kuva.tykkayksia%></b></small></h6>
+          </form>
+        <% } %>
+      </div>
+      </div>
+      <input type="hidden" name="kuva_id" value="<%= kuva.kuva_id%>">
+    </div>
+
+
+    <div class="card-body">
+      <div class="text-center mb-3">
+          <% if(kayttaja != null && kuva.kayttaja_id == kayttaja.id) {%>
+            <form method="POST" action="/poistaKuva">
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal-<%=kuva.kuva_id%>"><img class="icon" src="/icons/trash-2.svg"></button>
+            </form>
+          <% } %>
+      </div> 
+      <% if(kayttaja != null) {%>
+        <img src="/uploads/<%= kuva.kuvaUrl%>" class="mx-auto" style="max-width: 900px;">
+      <% } else { %>  
+        <img data-toggle="tooltip" title="Kirjauduttuasi voit lisätä itse kuvia palveluun!" src="/uploads/<%= kuva.kuvaUrl%>" class="mx-auto" style="max-width: 900px;">
+      <% } %>
+    </div>
+     
+    <div class="card-footer">
+      <div class="row">
+            <h6 class="mx-auto">Julkaisija: <i><%= kuva.kayttajatunnus%></i> <small>Julkaistu: <%=aikaleima%></small></h6>
+      </div>
+
+      <!-- kommentointi -->
+      <% if(kayttaja != null) {%>
+        <div class="text-center">
+        <button data-target="#collapse-kuva-<%=kuva.kuva_id%>" data-toggle="collapse" class="btn btn-info m-2"><img  class="icon mr-1 inline" src="/icons/message-square.svg">Keskustelu</button>
+        </div>
+        <div id="collapse-kuva-<%=kuva.kuva_id%>" class="collapse">
+          <form method="POST" action="/lisaaKommentti">
+            <div class="form-group">
+              <textarea class="form-control" id="sisalto-<%=kuva.kuva_id%>" name="sisalto"></textarea>
+            </div> 
+              <input type="hidden" name="kayttajatunnus" value="<%=kayttaja.kayttajatunnus%>">
+              <div class="form-group">  
+              <button class="btn btn-primary btn-sm float-right" type="submit" name="kuva_id" value="<%=kuva.kuva_id%>">Julkaise kommentti</button>
+              </div>    
+          </form>
+          <script>
+                    CKEDITOR.replace('sisalto-<%=kuva.kuva_id%>',{
+                        customConfig: '/js/ckeditor_config.js'
+                    });
+          </script>
+          
+      
+      <% if(kommentit != null) { %>    
+        <%kommentit.forEach(kommentti => { %>
+
+          <% let aika_kommentti = new Date(kuva.aikaleima); %>
+          <%let paiva_kommentti = aika.getDate();%> 
+          <%let kk_kommentti = aika.getMonth()+1;%> 
+          <%let vuosi_kommentti = aika.getFullYear();%> 
+          <%let tunnit_kommentti = aika.getHours();%>
+          <%let min_kommentti = aika.getMinutes();%>
+          <%let aikaleima_kommentti = `${paiva}.${kk}.${vuosi}  klo ${tunnit}:${min}`; %>
+          
+          <% if(kommentti.kuva_id == kuva.kuva_id) {%>
+            <div class="border-bottom mt-4">
+            <h6><%=kommentti.kayttajatunnus%> <small><%= aikaleima_kommentti%></small></h6>
+            <p><%- kommentti.sisalto%></p>
+            </div>
+          <% } %>  
+        <% }); %>  
+        </div>
+      <% } %>  
+      <% } %> 
+    </div> 
+    
+ 
+
+      <!-- Modal kuvanpoisto -->
+      <div class="modal" id="myModal-<%=kuva.kuva_id%>">
+        <div class="modal-dialog">
+          <div class="modal-content">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Kuvan poistaminen</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p>Haluatko varmasti poistaa kuvan otsikolla <b> <%= kuva.otsikko%></b> ?</p>
+        </div>
+
+        <div class="modal-footer">
+          <form method="POST" action="/poistaKuva">
+            <input type="hidden" name="kuvaUrl" value="<%= kuva.kuvaUrl%>">
+            <button name="kuva_id" value="<%= kuva.kuva_id%>" type="submit" class="btn btn-danger"><img class="icon" src="/icons/trash-2.svg"></button>
+          </form>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Peruuta</button>
+        </div>
+
+          </div>
+        </div>
+      </div>
+</div>
+</div>
+<% }); %>
+
+<% } else { %>
+  <h5 class="text-white text-center mt-5"> Palvelussa ei ole tällä hetkellä vielä kuvia. Kirjautuneena käyttäjänä voit lisätä uusia kuvia!<img class="icon ml-2 mb-1" src="/icons/smile.svg"></h5>
+<% } %>
+
+  <!-- Modal uloskirjautuminen -->
+      <div class="modal" id="kirjaudu_ulos">
+        <div class="modal-dialog">
+          <div class="modal-content">
+
+          <div class="modal-header">
+            <h4 class="modal-title">Uloskirjautuminen</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+
+          <div class="modal-body">
+              <p>Haluatko varmasti kirjautua ulos?</p>
+          </div>
+
+          <div class="modal-footer">
+            <form method="POST" action="/kirjauduUlos">
+              <button  type="submit" class="btn btn-danger">Kirjaudu ulos <img class="icon ml-1" src="/icons/log-out.svg"></button>
+            </form>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Peruuta</button>
+          </div>
+
+        </div>
+      </div>
+    </div>      
+<script>
+
+$(document).ready(function(){
+$('[data-toggle="tooltip"]').tooltip();   
+});
+</script>
+
+<%- include("includes/footer") -%>

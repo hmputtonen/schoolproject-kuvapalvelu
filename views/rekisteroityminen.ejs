@@ -1,0 +1,32 @@
+<%- include("includes/header"); -%>
+<div class="row flex justify-content-center">
+<div class="card p-3" style="width: 500px;">
+
+    <h4 class="mb-3">Rekisteröidy palvelun käyttäjäksi:</h4>
+
+<form method="POST" action="/rekisteroityminen/">
+
+<div class="form group">
+    <label class="form-check-label float-left mt-4"><b>Käyttäjätunnus:</b></label>
+    <input required class="form-control" type="text" name="uusiKayttajaTunnus" placeholder="Kirjoita haluamasi käyttäjätunnus">
+
+    <p class="mb-2"><i>Käyttäjätunnus toimii nimimerkkinäsi palvelussa.</i></p>
+</div>
+<div class="form group">
+    <label class="form-check-label float-left mt-2"><b>Salasana:</b></label>
+    <input required class="form-control mb-2" type="password" name="salasana" placeholder="Kirjoita haluamasi salasana">
+
+</div>
+
+<% if (virhe) { %>
+    <div class="alert alert-danger"><%= virhe%></div>
+<% } %>
+
+<input type="submit" class="btn btn-primary" name="rekisteroidy" value="Rekisteröidy">
+<a href="/" class="btn btn-secondary">Peruuta</a>
+
+</form>
+</div></div>>
+</div>
+
+<%- include("includes/footer") -%>
