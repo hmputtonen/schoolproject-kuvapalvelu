@@ -1,4 +1,4 @@
-# schoolproject-kuvapalvelu
+# Kuvapalvelu
 
 Sovellusohjelmointikurssin harjoitustyö, jossa tuli toteuttaa kurssilla opittuja tekniikoita itse ideoidussa sovelluksessa.
 
